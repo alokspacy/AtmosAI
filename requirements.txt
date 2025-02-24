@@ -6,4 +6,3 @@ google-generativeai
 requests
 ecapture
 pyautogui
-pypiwin32
