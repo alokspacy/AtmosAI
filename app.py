@@ -24,6 +24,16 @@ CORS(app)
 GENAI_API_KEY = "AIzaSyBTxpFrER0nGFSGiCwFm4tE9cbbBMfg_g8"  # 🔹 Replace with actual Gemini API Key
 genai.configure(api_key=GENAI_API_KEY)
 
+# Function to query Gemini API
+def ask_gemini(prompt):
+    try:
+        model = genai.GenerativeModel("gemini-pro")
+        response = model.generate_content(prompt)
+        return response.text if response else "I couldn't generate a response."
+    except Exception as e:
+        return f"Gemini API error: {e}"
+
+
 # Function to handle speech recognition (Only works on local systems)
 def recognize_speech():
     if running_on_render or not sr_available:
