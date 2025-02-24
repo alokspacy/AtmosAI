@@ -7,7 +7,12 @@ import google.generativeai as genai
 import requests
 import webbrowser
 import platform
-import pyautogui
+
+try:
+    import pyautogui  # May not work on Render
+    pyautogui_enabled = True
+except ImportError:
+    pyautogui_enabled = False
 
 # Flask app setup
 app = Flask(__name__)
@@ -120,14 +125,13 @@ def execute_task(command):
         os.system("shutdown /r /t 1")
 
     elif "sleep" in command:
-        requests.get("https://your-app-name.onrender.com/api/sleep")  # 🔹 Replace with Render URL
-        response = "Putting the PC to sleep."
+        response = sleep_pc()  # Calls sleep function directly
 
-    elif "increase volume" in command:
+    elif "increase volume" in command and pyautogui_enabled:
         pyautogui.press("volumeup", presses=5)
         response = "Increasing volume."
 
-    elif "decrease volume" in command:
+    elif "decrease volume" in command and pyautogui_enabled:
         pyautogui.press("volumedown", presses=5)
         response = "Decreasing volume."
 
@@ -187,4 +191,4 @@ def atmos_response():
 # Start Flask Server
 if __name__ == "__main__":
     print("Atmos Assistant is running...")
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=False, host="0.0.0.0", port=5000)  # 🔥 Set debug=False in production
