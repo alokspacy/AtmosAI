@@ -163,78 +163,114 @@
         <div class="response" id="responseBox">Listening...</div>
     </div>
     <script>
-        let listening = true;
-        let speechSynthesisActive = false;
-        let speech = window.speechSynthesis;
-        let recognitionRunning = false;
-        
-        function toggleMenu() {
-            let menu = document.getElementById("menu");
-            menu.style.display = menu.style.display === "block" ? "none" : "block";
+    let listening = true;
+    let speechSynthesisActive = false;
+    let speech = window.speechSynthesis;
+    let recognition;
+    let recognitionRunning = false;
+
+    function toggleMenu() {
+        let menu = document.getElementById("menu");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function stopSpeakingAndListening() {
+        if (recognition) {
+            recognition.stop();
         }
-        
-        function stopSpeakingAndListening() {
-            speech.cancel();
-            speechSynthesisActive = false;
-            listening = false;
-            recognitionRunning = false;
-            document.getElementById("responseBox").innerText = "Listening stopped. Click the mic button to resume.";
+        speech.cancel();
+        speechSynthesisActive = false;
+        listening = false;
+        recognitionRunning = false;
+        document.getElementById("responseBox").innerText = "Listening stopped. Click the mic button to resume.";
+    }
+
+    function startListening() {
+        let responseBox = document.getElementById("responseBox");
+        responseBox.style.display = "block";
+        responseBox.innerText = "Listening...";
+
+        // Check if browser supports Speech Recognition
+        if (!("webkitSpeechRecognition" in window)) {
+            responseBox.innerText = "Speech recognition not supported in your browser. Try using Google Chrome.";
+            return;
         }
-        
-        async function startListening() {
-            if (!listening || recognitionRunning) return;
-        
-            let responseBox = document.getElementById("responseBox");
-            responseBox.style.display = "block";
-            responseBox.innerText = "Listening...";
+
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = "en-IN"; // Set language
+
+        recognition.onstart = function() {
+            responseBox.innerText = "Listening... Speak now!";
             recognitionRunning = true;
-        
-            fetch("https://atmosai.onrender.com/api/listen")
-                .then(response => response.json())
-                .then(data => {
-                    if (!listening) return;
-                    
-                    responseBox.innerText = `You said: "${data.command}"\nAtmos: ${data.response}`;
-                    speakResponse(data.response);
-                })
-                .catch(error => {
-                    responseBox.innerText = "Error: Unable to connect to Atmos.";
-                    console.error("Error:", error);
-                })
-                .finally(() => {
-                    recognitionRunning = false;
-                });
-        }
-        
-        function speakResponse(text) {
-            if (speechSynthesisActive) return;
-        
-            let utterance = new SpeechSynthesisUtterance(text);
-            speechSynthesisActive = true;
-        
-            utterance.onend = function () {
-                speechSynthesisActive = false;
-                if (listening) {
-                    startListening();
-                }
-            };
-        
-            speech.speak(utterance);
-        }
-        
-        function toggleListening() {
-            if (speechSynthesisActive) {
-                stopSpeakingAndListening();
+        };
+
+        recognition.onresult = function(event) {
+            let transcript = event.results[0][0].transcript;
+            responseBox.innerText = `You said: "${transcript}"\nProcessing...`;
+
+            // Send recognized text to Flask API on Render
+            fetch("https://atmosai.onrender.com/api/listen", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ command: transcript })
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseBox.innerText = `You said: "${data.command}"\nAtmos: ${data.response}`;
+                speakResponse(data.response);
+            })
+            .catch(error => {
+                responseBox.innerText = "Error: Unable to connect to Atmos.";
+                console.error("Error:", error);
+            })
+            .finally(() => {
+                recognitionRunning = false;
+            });
+        };
+
+        recognition.onerror = function(event) {
+            responseBox.innerText = "Error in speech recognition. Please try again.";
+            console.error("Speech Recognition Error:", event);
+        };
+
+        recognition.onend = function() {
+            responseBox.innerText += "\nRecognition ended.";
+            recognitionRunning = false;
+        };
+
+        recognition.start();
+    }
+
+    function speakResponse(text) {
+        if (speechSynthesisActive) return;
+
+        let utterance = new SpeechSynthesisUtterance(text);
+        speechSynthesisActive = true;
+
+        utterance.onend = function () {
+            speechSynthesisActive = false;
+            if (listening) {
+                startListening();
+            }
+        };
+
+        speech.speak(utterance);
+    }
+
+    function toggleListening() {
+        if (speechSynthesisActive) {
+            stopSpeakingAndListening();
+        } else {
+            listening = !listening;
+            if (listening) {
+                document.getElementById("responseBox").innerText = "Listening...";
+                startListening();
             } else {
-                listening = !listening;
-                if (listening) {
-                    document.getElementById("responseBox").innerText = "Listening...";
-                    startListening();
-                } else {
-                    document.getElementById("responseBox").innerText = "Listening stopped. Click the mic button to resume.";
-                }
+                document.getElementById("responseBox").innerText = "Listening stopped. Click the mic button to resume.";
             }
         }
-    </script>                
+    }
+</script>               
 </body>
 </html>
