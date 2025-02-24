@@ -4,6 +4,5 @@ speechrecognition
 pyttsx3
 google-generativeai
 requests
-ecapture
 pyautogui
 gunicorn
