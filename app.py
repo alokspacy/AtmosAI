@@ -2,14 +2,22 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import speech_recognition as sr
 import os
-import pyttsx3  # Cross-platform TTS
 import google.generativeai as genai
 import requests
 import webbrowser
 import platform
 
-# Check if running on Render (Render does not support pyautogui)
-running_on_render = os.getenv("RENDER") is not None
+try:
+    import pyttsx3  # Windows/Linux TTS
+    tts_available = True
+except ImportError:
+    tts_available = False
+
+try:
+    from gtts import gTTS  # Google TTS for Render
+    gtts_available = True
+except ImportError:
+    gtts_available = False
 
 # Flask app setup
 app = Flask(__name__)
@@ -19,8 +27,14 @@ CORS(app)  # Enable CORS for API requests
 GENAI_API_KEY = "AIzaSyBTxpFrER0nGFSGiCwFm4tE9cbbBMfg_g8"  # 🔹 Replace with actual Gemini API Key
 genai.configure(api_key=GENAI_API_KEY)
 
+# Detect if running on Render
+running_on_render = os.getenv("RENDER") is not None
+
 # Initialize TTS (Cross-Platform)
-speaker = pyttsx3.init()
+if not running_on_render and tts_available:
+    speaker = pyttsx3.init()
+else:
+    speaker = None  # Use gTTS for Render
 
 # Global variable to track listening state
 listening_active = True  # Starts in listening mode
@@ -28,8 +42,18 @@ listening_active = True  # Starts in listening mode
 # Function to handle speaking
 def speak(text):
     print(f"Atmos: {text}")  # Debugging log
-    speaker.say(text)
-    speaker.runAndWait()
+
+    if running_on_render and gtts_available:
+        # Use gTTS on Render
+        tts = gTTS(text)
+        tts.save("response.mp3")
+        os.system("mpg321 response.mp3")  # May need to change based on server
+    elif not running_on_render and speaker:
+        # Use pyttsx3 for local execution
+        speaker.say(text)
+        speaker.runAndWait()
+    else:
+        print("Text-to-Speech not available.")
 
 # Function to query Gemini API
 def ask_gemini(prompt):
@@ -124,9 +148,6 @@ def execute_task(command):
     elif "sleep" in command:
         response = sleep_pc()
 
-    elif "increase volume" in command or "decrease volume" in command:
-        response = "Volume control is not supported on cloud hosting."
-
     elif "who created you" in command:
         response = "I have been created by Team Atmos."
 
@@ -135,7 +156,7 @@ def execute_task(command):
 
     return response
 
-# Sleep PC (Fixed for Linux)
+# Sleep PC
 @app.route("/api/sleep", methods=["GET"])
 def sleep_pc():
     try:
@@ -183,4 +204,4 @@ def atmos_response():
 # Start Flask Server
 if __name__ == "__main__":
     print("Atmos Assistant is running...")
-    app.run(debug=False, host="0.0.0.0", port=5000)  # 🔥 Set debug=False in production
+    app.run(debug=False, host="0.0.0.0", port=5000)
