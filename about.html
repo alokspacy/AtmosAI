@@ -13,12 +13,13 @@
     font-family: 'Arial', sans-serif;
     text-align: center;
     overflow-x: hidden;
+    overflow-y: auto; /* Allows scrolling */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* Ensures it expands based on content */
     margin: 0;
-    padding: 20px;
+    padding: 40px 20px; /* Adds spacing at the top */
     backdrop-filter: blur(3px);
     position: relative;
 }
