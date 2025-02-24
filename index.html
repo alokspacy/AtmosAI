@@ -189,7 +189,7 @@
             responseBox.innerText = "Listening...";
             recognitionRunning = true;
         
-            fetch("http://127.0.0.1:5000/api/listen")
+            fetch("https://atmosai.onrender.com/api/listen")
                 .then(response => response.json())
                 .then(data => {
                     if (!listening) return;
