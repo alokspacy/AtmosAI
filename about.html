@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Atmos AI</title>
+    <link rel="icon" href=
+"https://1000logos.net/wp-content/uploads/2020/09/Atmos-Energy-Emblem.jpg"
+        type="image/x-icon" />
+    <style>
+        body {
+            background: radial-gradient(circle at center, #002244, #000000);
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .description-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid cyan;
+            box-shadow: 0 0 20px cyan;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            text-shadow: 0 0 5px cyan;
+        }
+        h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px cyan;
+        }
+        .back-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            color: white;
+            background: transparent;
+            border: 2px solid cyan;
+            cursor: pointer;
+            box-shadow: 0 0 10px cyan;
+            transition: 0.3s;
+        }
+        .back-btn:hover {
+            background: cyan;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>About Atmos AI</h1>
+        <div class="description-box">
+            <p>I'm Made By The Team Atmos And Created By Sir Alok and Sir Aryan.</p>
+            <p>Directions Given By Dev and Prince.</p>
+        </div>
+        <button class="back-btn" onclick="goBack()">Go Back</button>
+    </div>
+    <script>
+        function goBack() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

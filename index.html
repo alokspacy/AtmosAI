@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atmos AI Assistant</title>
+    <link rel="icon" href="https://1000logos.net/wp-content/uploads/2020/09/Atmos-Energy-Emblem.jpg"
+        type="image/x-icon" />
+    <style>
+        body {
+    background: radial-gradient(circle at center, #002244, #000000);
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    height: auto; /* 🔥 Allows full scrolling */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column; /* 🔥 Ensures proper stacking */
+    align-items: center;
+    justify-content: flex-start; /* 🔥 Content starts from the top */
+    text-align: center;
+    overflow-y: auto; /* 🔥 Enables full-page scrolling */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 110vh; /* 🔥 Ensures page is long enough to scroll */
+    padding: 20px; /* 🔥 Adds spacing */
+    box-sizing: border-box; /* 🔥 Prevents layout shift */
+}
+        .menu-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 1000; /* 🔥 Ensures it stays above other elements */
+            pointer-events: auto; /* 🔥 Allows clicking */
+        }
+        .menu-icon div {
+            width: 100%;
+            height: 3px;
+            background-color: cyan;
+            box-shadow: 0 0 8px cyan;
+        }
+        .menu {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            box-shadow: 0 0 10px cyan;
+            z-index: 999;
+        }
+        .menu a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .techfire {
+            width: 200px;
+            height: 200px;
+            border: 10px solid cyan;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 50px cyan;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.2), transparent);
+        }
+        .inner-circle {
+            width: 100px;
+            height: 100px;
+            border: 6px solid cyan;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px cyan;
+        }
+        .core {
+            width: 50px;
+            height: 50px;
+            background-color: cyan;
+            border-radius: 50%;
+            box-shadow: 0 0 35px cyan, 0 0 60px cyan inset;
+        }
+        h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px cyan;
+        }
+        p {
+            font-size: 1.2rem;
+            color: lightgray;
+            text-shadow: 0 0 5px cyan;
+        }
+        .mic-btn {
+            margin-top: 20px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.8), rgba(0, 255, 255, 0.3));
+            border: 3px solid cyan;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px cyan;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-btn img {
+            width: 35px;
+            height: 35px;
+        }
+        .response {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            display: block;
+            max-height: 300px;
+            overflow-y: auto;
+            width: 50%;
+            box-shadow: 0 0 15px cyan;
+            text-shadow: 0 0 5px cyan;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-icon" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div class="menu" id="menu">
+        <a href="about.html">About Us</a>
+        <a href="login.html">Login</a>
+    </div>
+    <div class="container">
+        <div class="techfire">
+            <div class="inner-circle">
+                <div class="core"></div>
+            </div>
+        </div>
+        <h1>I'm Atmos</h1>
+        <p>Your Intelligent Virtual Assistant</p>
+        <button class="mic-btn" onclick="toggleListening()">
+            <img src="https://www.svgrepo.com/show/1902/microphone.svg" alt="Mic Icon">
+        </button>        
+        <div class="response" id="responseBox">Listening...</div>
+    </div>
+    <script>
+        let listening = true;
+        let speechSynthesisActive = false;
+        let speech = window.speechSynthesis;
+        let recognitionRunning = false;
+        
+        function toggleMenu() {
+            let menu = document.getElementById("menu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+        
+        function stopSpeakingAndListening() {
+            speech.cancel();
+            speechSynthesisActive = false;
+            listening = false;
+            recognitionRunning = false;
+            document.getElementById("responseBox").innerText = "Listening stopped. Click the mic button to resume.";
+        }
+        
+        async function startListening() {
+            if (!listening || recognitionRunning) return;
+        
+            let responseBox = document.getElementById("responseBox");
+            responseBox.style.display = "block";
+            responseBox.innerText = "Listening...";
+            recognitionRunning = true;
+        
+            fetch("http://127.0.0.1:5000/api/listen")
+                .then(response => response.json())
+                .then(data => {
+                    if (!listening) return;
+                    
+                    responseBox.innerText = `You said: "${data.command}"\nAtmos: ${data.response}`;
+                    speakResponse(data.response);
+                })
+                .catch(error => {
+                    responseBox.innerText = "Error: Unable to connect to Atmos.";
+                    console.error("Error:", error);
+                })
+                .finally(() => {
+                    recognitionRunning = false;
+                });
+        }
+        
+        function speakResponse(text) {
+            if (speechSynthesisActive) return;
+        
+            let utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesisActive = true;
+        
+            utterance.onend = function () {
+                speechSynthesisActive = false;
+                if (listening) {
+                    startListening();
+                }
+            };
+        
+            speech.speak(utterance);
+        }
+        
+        function toggleListening() {
+            if (speechSynthesisActive) {
+                stopSpeakingAndListening();
+            } else {
+                listening = !listening;
+                if (listening) {
+                    document.getElementById("responseBox").innerText = "Listening...";
+                    startListening();
+                } else {
+                    document.getElementById("responseBox").innerText = "Listening stopped. Click the mic button to resume.";
+                }
+            }
+        }
+    </script>                
+</body>
+</html>
