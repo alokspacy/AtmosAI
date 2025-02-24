@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import speech_recognition as sr
 import os
-import win32com.client  # Windows TTS (for speaking)
 import pyttsx3  # Backup TTS
 import google.generativeai as genai
 import requests
@@ -19,12 +18,8 @@ CORS(app)  # Enable CORS for API requests
 genai.configure(api_key="AIzaSyBTxpFrER0nGFSGiCwFm4tE9cbbBMfg_g8")
 
 # Initialize TTS (Text-to-Speech)
-try:
-    speaker = win32com.client.Dispatch("SAPI.SpVoice")
-    win32_tts = True
-except Exception:
-    speaker = pyttsx3.init()
-    win32_tts = False
+# Initialize TTS (Cross-Platform)
+speaker = pyttsx3.init()
 
 # Global variable to track listening state
 listening_active = True  # Starts in listening mode
@@ -209,6 +204,8 @@ def sleep_pc():
         system = platform.system()
         if system == "Windows":
             os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
+        elif system == "Linux":
+            os.system("systemctl suspend")  # Correct Linux command
         else:
             return jsonify({"response": "Unsupported OS"}), 400
 
