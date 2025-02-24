@@ -8,11 +8,8 @@ import requests
 import webbrowser
 import platform
 
-try:
-    import pyautogui  # May not work on Render
-    pyautogui_enabled = True
-except ImportError:
-    pyautogui_enabled = False
+# Check if running on Render (Render does not support pyautogui)
+running_on_render = os.getenv("RENDER") is not None
 
 # Flask app setup
 app = Flask(__name__)
@@ -125,15 +122,10 @@ def execute_task(command):
         os.system("shutdown /r /t 1")
 
     elif "sleep" in command:
-        response = sleep_pc()  # Calls sleep function directly
+        response = sleep_pc()
 
-    elif "increase volume" in command and pyautogui_enabled:
-        pyautogui.press("volumeup", presses=5)
-        response = "Increasing volume."
-
-    elif "decrease volume" in command and pyautogui_enabled:
-        pyautogui.press("volumedown", presses=5)
-        response = "Decreasing volume."
+    elif "increase volume" in command or "decrease volume" in command:
+        response = "Volume control is not supported on cloud hosting."
 
     elif "who created you" in command:
         response = "I have been created by Team Atmos."
