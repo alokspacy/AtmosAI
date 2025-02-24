@@ -2,11 +2,10 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import speech_recognition as sr
 import os
-import pyttsx3  # Backup TTS
+import pyttsx3  # Cross-platform TTS
 import google.generativeai as genai
 import requests
 import webbrowser
-from ecapture import ecapture as ec
 import platform
 import pyautogui
 
@@ -15,9 +14,9 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for API requests
 
 # Set Gemini API key
-genai.configure(api_key="AIzaSyBTxpFrER0nGFSGiCwFm4tE9cbbBMfg_g8")
+GENAI_API_KEY = "AIzaSyBTxpFrER0nGFSGiCwFm4tE9cbbBMfg_g8"  # 🔹 Replace with actual Gemini API Key
+genai.configure(api_key=GENAI_API_KEY)
 
-# Initialize TTS (Text-to-Speech)
 # Initialize TTS (Cross-Platform)
 speaker = pyttsx3.init()
 
@@ -27,12 +26,8 @@ listening_active = True  # Starts in listening mode
 # Function to handle speaking
 def speak(text):
     print(f"Atmos: {text}")  # Debugging log
-    if win32_tts:
-        speaker.Speak(text)
-    else:
-        speaker.say(text)
-        speaker.runAndWait()
-
+    speaker.say(text)
+    speaker.runAndWait()
 
 # Function to query Gemini API
 def ask_gemini(prompt):
@@ -62,58 +57,25 @@ def recognize_speech():
             return "Sorry, I couldn't understand that."
         except sr.RequestError as e:
             return f"Speech recognition error: {e}"
-        
 
-# Function to open Notepad
-def open_notepad():
-        os.system("notepad.exe")
-
-# Restart My PC
-def restart_pc():
-    os.system("shutdown /r /t 1")
-    return "Restarting the system."
-
-# Shut Down PC
-def shutdown_pc():
-    os.system("shutdown /s /t 1")
-    return "Shutting down the system."
-
-# Increase Volume
-def increase_volume():
-    pyautogui.press("volumeup", presses=5)
-
-# Decrease Volume
-def decrease_volume():
-    pyautogui.press("volumedown", presses=5)
-
-# Show System Information
-def system_info():
-    return platform.uname()
-
-# Open File Explorer
-def open_file_explorer():
-    os.system("explorer")
-
-# Open Google
-def open_google():
-    webbrowser.open("https://www.google.com")
-
-# Open Network Settings
-def open_network_settings():
-    os.system("start ms-settings:network")
-
-# Search Location
-def search_location(query):
-    url = f"https://www.google.com/maps/search/{query.replace(' ', '+')}"
-    webbrowser.open(url)
-
-# Open Camera
-def open_camera():
-    ec.capture(0, "Atmos Camera", "camera_capture.jpg")
+# Function to get weather
+def get_weather(city="Kanpur"):
+    API_KEY = "bd5e378503939ddaee76f12ad7a97608"  # 🔹 Replace with actual OpenWeather API Key
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        if data.get("cod") == 200:
+            temp = data["main"]["temp"]
+            description = data["weather"][0]["description"]
+            return f"The temperature in {city} is {temp}°C with {description}."
+        return "Could not fetch weather data."
+    except Exception as e:
+        return f"Weather API error: {e}"
 
 # Function to execute tasks
 def execute_task(command):
-    global listening_active, speaking_active
+    global listening_active
     response = "I'm not sure how to handle that command."
 
     if not listening_active:
@@ -124,71 +86,50 @@ def execute_task(command):
         response = "Listening stopped. Click the mic button to resume."
 
     elif "weather" in command:
-        response = get_weather("Kanpur")  # Example default location
-
-    elif "open camera" in command:
-         open_camera()
-         response = "Opening camera."
+        speak("Which city's weather do you want to check?")
+        city = recognize_speech()
+        response = get_weather(city)
 
     elif "search location" in command or "find location" in command:
-         speak("What location do you want to search for?")
-         location = recognize_speech()
-         search_location(location)
-         response = f"Searching Google Maps for {location}."
-
+        speak("What location do you want to search for?")
+        location = recognize_speech()
+        webbrowser.open(f"https://www.google.com/maps/search/{location}")
+        response = f"Searching Google Maps for {location}."
 
     elif "open google" in command:
-         speak("What would you like to search for?")
-         search_query = recognize_speech()
-         if search_query and search_query != "Sorry, I couldn't understand that.":
-           url = f"https://www.google.com/search?q={search_query.replace(' ', '+')}"
-           webbrowser.open(url)
-           response = f"Searching Google for {search_query}."
-         else:
-           response = "I couldn't recognize the search query."
-
-    elif "open network settings" in command:
-         open_network_settings()
-         response = "Opening Network settings."
-
-    elif "open file explorer" in command:
-         open_file_explorer()
-         response = "Opening File Explorer."
-
-    elif "system info" in command:
-         info = system_info()
-         response = f"System: {info.system}, Version: {info.version}, Machine: {info.machine}"
-
-
-    elif "open notepad" in command:
-         open_notepad()
-         response = "Opening Notepad."
-
-    elif "increase volume" in command:
-         increase_volume()
-         response = "Increasing volume."
-
-    elif "decrease volume" in command:
-         decrease_volume()
-         response = "Decreasing volume."
-
+        speak("What would you like to search for?")
+        search_query = recognize_speech()
+        if search_query and search_query != "Sorry, I couldn't understand that.":
+            webbrowser.open(f"https://www.google.com/search?q={search_query.replace(' ', '+')}")
+            response = f"Searching Google for {search_query}."
+        else:
+            response = "I couldn't recognize the search query."
 
     elif "open youtube" in command:
         speak("What would you like to search for?")
         search_query = recognize_speech()
-        url = f"https://www.youtube.com/results?search_query={search_query.replace(' ', '+')}"
-        webbrowser.open(url)
+        webbrowser.open(f"https://www.youtube.com/results?search_query={search_query.replace(' ', '+')}")
         response = f"Searching YouTube for {search_query}."
 
-    elif "shutdown" in command or "shut down my pc" in command:
-        response = shutdown_pc()
+    elif "shutdown" in command:
+        response = "Shutting down the system."
+        os.system("shutdown /s /t 1")
 
-    elif "restart" in command or "reboot pc" in command:
-        response = restart_pc()
+    elif "restart" in command:
+        response = "Restarting the system."
+        os.system("shutdown /r /t 1")
 
-    elif "sleep" in command or "sleep mode" in command:
-        requests.get("http://127.0.0.1:5000/api/sleep")
+    elif "sleep" in command:
+        requests.get("https://your-app-name.onrender.com/api/sleep")  # 🔹 Replace with Render URL
         response = "Putting the PC to sleep."
+
+    elif "increase volume" in command:
+        pyautogui.press("volumeup", presses=5)
+        response = "Increasing volume."
+
+    elif "decrease volume" in command:
+        pyautogui.press("volumedown", presses=5)
+        response = "Decreasing volume."
 
     elif "who created you" in command:
         response = "I have been created by Team Atmos."
@@ -196,8 +137,9 @@ def execute_task(command):
     else:
         response = ask_gemini(command)
 
-    return response  # 🔥 Only return text, do NOT call speak() 
-# 🔥 Sleep PC
+    return response
+
+# Sleep PC (Fixed for Linux)
 @app.route("/api/sleep", methods=["GET"])
 def sleep_pc():
     try:
@@ -205,7 +147,7 @@ def sleep_pc():
         if system == "Windows":
             os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
         elif system == "Linux":
-            os.system("systemctl suspend")  # Correct Linux command
+            os.system("systemctl suspend")
         else:
             return jsonify({"response": "Unsupported OS"}), 400
 
@@ -213,7 +155,7 @@ def sleep_pc():
     except Exception as e:
         return jsonify({"response": f"Error putting PC to sleep: {e}"}), 500
 
-# API to continuously listen until stopped by mic button
+# API to continuously listen
 @app.route("/api/listen", methods=["GET"])
 def listen_command():
     global listening_active
@@ -221,10 +163,10 @@ def listen_command():
         return jsonify({"command": "", "response": "Listening is turned off. Click the mic button to resume."})
 
     command = recognize_speech()
-    response = execute_task(command)  # 🔥 Only returns text now
+    response = execute_task(command)
     return jsonify({"command": command, "response": response})
-    
-# API to toggle listening state when mic button is clicked
+
+# API to toggle listening
 @app.route("/api/toggle_listen", methods=["POST"])
 def toggle_listening():
     global listening_active
@@ -232,22 +174,7 @@ def toggle_listening():
     state = "on" if listening_active else "off"
     return jsonify({"message": f"Listening turned {state}."})
 
-# Function to get weather
-def get_weather(city="Kanpur"):
-    api_key = "bd5e378503939ddaee76f12ad7a97608"
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
-    try:
-        response = requests.get(url)
-        data = response.json()
-        if data.get("cod") == 200:
-            temp = data["main"]["temp"]
-            description = data["weather"][0]["description"]
-            return f"The temperature in {city} is {temp}°C with {description}."
-        return f"Could not fetch weather data."
-    except Exception as e:
-        return f"Weather API error: {e}"
-
-# API to handle text-based Atmos requests
+# API to handle Atmos responses
 @app.route("/api/atmos", methods=["POST"])
 def atmos_response():
     data = request.get_json()
@@ -257,13 +184,7 @@ def atmos_response():
     response = execute_task(command)
     return jsonify({"response": response})
 
-# API to stop execution
-@app.route("/api/stop", methods=["POST"])
-def stop_execution():
-    global listening_active
-    listening_active = False
-    return jsonify({"message": "Listening stopped."})
-
+# Start Flask Server
 if __name__ == "__main__":
     print("Atmos Assistant is running...")
     app.run(debug=True, host="0.0.0.0", port=5000)
