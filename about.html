@@ -4,52 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Atmos AI</title>
-    <link rel="icon" href=
-"https://1000logos.net/wp-content/uploads/2020/09/Atmos-Energy-Emblem.jpg"
-        type="image/x-icon" />
+    <link rel="icon" href="https://1000logos.net/wp-content/uploads/2020/09/Atmos-Energy-Emblem.jpg" type="image/x-icon" />
     <style>
-        body {
-            background: radial-gradient(circle at center, #002244, #000000);
-            color: white;
-            text-align: center;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
+    /* 🔥 Dark Futuristic Background */
+    body {
+    background: #000000; /* Pure Black */
+    color: #00eaff;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+    position: relative;
+}
+
+/* 🔥 Animated Moving Stripes */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0px,
+        rgba(255, 255, 255, 0.1) 2px,
+        transparent 3px,
+        transparent 10px
+    );
+    animation: moveStripes 8s linear infinite;
+    z-index: -1;
+}
+
+/* 🔥 Stripe Animation */
+@keyframes moveStripes {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50px);
+    }
+}
+
+
+        /* Centering Everything */
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-        }
-        .description-box {
-            background: rgba(0, 255, 255, 0.1);
-            border: 2px solid cyan;
-            box-shadow: 0 0 20px cyan;
+            text-align: center;
+            width: 100%;
+            max-width: 800px; /* Wider Box */
             padding: 20px;
-            border-radius: 10px;
-            width: 50%;
-            text-shadow: 0 0 5px cyan;
         }
+
+        /* Glowing Header */
         h1 {
             font-size: 3rem;
             font-weight: bold;
-            text-shadow: 0 0 10px cyan;
+            text-shadow: 0 0 15px cyan, 0 0 30px rgba(0, 255, 255, 0.5);
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            animation: textGlow 1.5s ease-in-out infinite alternate;
         }
+
+        /* Glowing Box */
+        .description-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00eaff;
+            box-shadow: 0 0 20px cyan, 0 0 40px rgba(0, 255, 255, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%; /* Increased Width */
+            max-width: 700px;
+            text-shadow: 0 0 5px cyan;
+            animation: glowPulse 2s infinite alternate;
+        }
+
+        /* Button Styling */
         .back-btn {
             margin-top: 20px;
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 1.2rem;
-            color: white;
+            color: #00eaff;
             background: transparent;
-            border: 2px solid cyan;
+            border: 2px solid #00eaff;
             cursor: pointer;
-            box-shadow: 0 0 10px cyan;
-            transition: 0.3s;
+            box-shadow: 0 0 15px cyan;
+            transition: 0.3s ease-in-out;
+            border-radius: 5px;
+            text-transform: uppercase;
         }
+
         .back-btn:hover {
-            background: cyan;
+            background: #00eaff;
             color: black;
+            box-shadow: 0 0 25px cyan;
+            transform: scale(1.05);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .description-box {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .back-btn {
+                font-size: 1rem;
+                padding: 10px 20px;
+            }
         }
     </style>
 </head>
@@ -57,11 +132,18 @@
     <div class="container">
         <h1>About Atmos AI</h1>
         <div class="description-box">
-            <p>I'm Made By The Team Atmos And Created By Sir Alok and Sir Aryan.</p>
-            <p>Directions Given By Dev and Prince.</p>
-        </div>
+            <h2>🚀 Developed with Passion & Innovation</h2>
+            <p>Atmos AI is the brainchild of <strong>Alok and Aryan</strong>, crafted with <strong>unwavering dedication, advanced technical expertise, and a bold vision</strong> to revolutionize AI-driven virtual assistance. Their relentless pursuit of innovation and excellence has shaped Atmos into a <strong>highly intelligent, efficient, and futuristic system</strong>, capable of adapting to user needs with precision.</p>
+        
+            <h2>🤝 Strengthened by a Dynamic Team</h2>
+            <p>The development of Atmos AI has been <strong>greatly empowered</strong> by the invaluable contributions of <strong>Dev And Prince</strong>. Their expertise and collaborative efforts have been crucial in enhancing the AI’s capabilities, ensuring seamless performance, and fine-tuning its cutting-edge features. Their support has played a pivotal role in optimizing Atmos for an unmatched user experience.</p>
+        
+            <h2>🎓 Guided by Expertise & Vision</h2>
+            <p>Under the <strong>strategic mentorship of Ashish Kumar Sir</strong>, Atmos AI has transformed into a <strong>well-structured, efficient, and future-ready AI system</strong>. His <strong>insightful guidance</strong> has been instrumental in refining the assistant's core functionalities, making it a powerful, reliable, and futuristic AI.</p>
+        </div>        
         <button class="back-btn" onclick="goBack()">Go Back</button>
     </div>
+
     <script>
         function goBack() {
             window.location.href = "index.html";
