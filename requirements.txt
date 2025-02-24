@@ -6,3 +6,4 @@ google-generativeai
 requests
 ecapture
 pyautogui
+gunicorn
