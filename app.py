@@ -27,7 +27,7 @@ genai.configure(api_key=GENAI_API_KEY)
 # Function to query Gemini API
 def ask_gemini(prompt):
     try:
-        model = genai.GenerativeModel("gemini-pro")
+        model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(prompt)
         return response.text if response else "I couldn't generate a response."
     except Exception as e:
